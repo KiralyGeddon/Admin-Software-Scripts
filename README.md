@@ -2,9 +2,9 @@
 Script d'outils d'administrations et d'installation de softwares - Projet de formation TSSR
 - Comment utiliser :
 ```
-apt install -y git
+sudo apt install -y git
 git clone https://github.com/KiralyGeddon/AdminSysTools
 cd AdminSysTools
-chmod +x *
+sudo chmod +x *
 ./main.sh
 ```
