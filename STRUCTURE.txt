@@ -1,0 +1,29 @@
+.
+├── main.sh
+├── README.md
+├── structure.txt
+├── images/
+│   └── intro.png
+├── librairies/
+│   └── lib.sh
+├── administration/
+│   └── menu_administration.sh
+│   └── scripts/
+│       └── changedroits.sh
+│       └── changeIP.sh
+│       └── confDHCP.sh
+│       └── confDNS.sh
+│       └── confssh.sh
+│       └── confsudo.sh
+│       └── createuser.sh
+│       └── deluser.sh
+│       └── FTPconfig.sh
+│       └── routing.sh
+└── logiciels/
+    └── menu_logiciels.sh
+    └── scripts/
+        └── install_docker.sh
+        └── install_nagios.sh
+        └── install_portainer.sh
+        └── install_xivo.sh
+        └── install_zabbix.sh
