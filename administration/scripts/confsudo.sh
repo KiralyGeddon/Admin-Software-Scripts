@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 # Get the directory where the script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
@@ -34,113 +32,93 @@ configurer_sudo() {
 
     case "$choice" in
         1)
-            # Ajout d'un utilisateur au groupe sudo.
-            print_step "Ajout d'un utilisateur au groupe sudo..."
-            local users_to_add
-            # Récupère la liste de tous les utilisateurs humains, comme dans deluser.sh
-            users_to_add=$(getent passwd | awk -F: '($3 >= 1000) {print $1}' | grep -vE '^(nobody|systemd-resolve|syslog|daemon|bin|sys|sync|games|man|lp|mail|news|uucp|proxy|www-data|backup|list|irc|gnats|libuuid|systemd-timesync|messagebus|_apt|uuidd|systemd-network|systemd-coredump)$' | tr '\n' ' ')
+            local users_list=()
+            # Lit les utilisateurs depuis /etc/passwd et filtre ceux avec UID >= 1000 (utilisateurs normaux)
+            while IFS=: read -r username _ uid _ _ _ _; do
+                if (( uid >= 1000 )) && [[ "$username" != "nobody" ]]; then
+                    # Correction ici: utiliser le nom d'utilisateur pour la valeur et la description
+                    users_list+=("$username" "$username")
+                fi
+            done < /etc/passwd
 
-            if [[ -z "$users_to_add" ]]; then
-                print_error "Aucun utilisateur régulier trouvé à ajouter au groupe sudo."
-                whiptail --msgbox "Aucun utilisateur à ajouter. Appuyez sur Entrée pour revenir au menu Sudo." 8 70
+            if [ ${#users_list[@]} -eq 0 ]; then
+                print_error "Aucun utilisateur système avec UID >= 1000 trouvé."
+                whiptail --msgbox "Aucun utilisateur éligible n'a été trouvé pour l'ajout au groupe sudo." 10 60
                 configurer_sudo # Revenir au menu sudo
-                return 1
+                return
             fi
 
             local selected_user
-            selected_user=$(whiptail --title "Ajouter au groupe sudo" \
-                --menu "Choisissez l'utilisateur à ajouter au groupe sudo :" 20 70 10 \
-                $users_to_add \
-                3>&1 1>&2 2>&3)
+            selected_user=$(whiptail --menu "Sélectionnez l'utilisateur à ajouter au groupe sudo :" 20 78 10 "${users_list[@]}" 3>&1 1>&2 2>&3)
 
             if [[ -z "$selected_user" ]]; then
-                print_step "Sélection de l'utilisateur annulée. Aucune modification."
-                whiptail --msgbox "Opération annulée. Appuyez sur Entrée pour revenir au menu Sudo." 8 70
+                print_step "Ajout d'utilisateur au groupe sudo annulé."
                 configurer_sudo # Revenir au menu sudo
-                return 1
+                return
             fi
 
-            # Vérifie si l'utilisateur est déjà dans le groupe sudo.
-            if groups "$selected_user" | grep -qw "sudo"; then
-                print_warning "L'utilisateur '$selected_user' est déjà membre du groupe sudo."
+            print_step "Ajout de l'utilisateur '$selected_user' au groupe sudo..."
+            if sudo usermod -aG sudo "$selected_user" &>/dev/null; then
+                print_success "L'utilisateur '$selected_user' a été ajouté au groupe sudo avec succès."
+                print_step "L'utilisateur devra se déconnecter et se reconnecter pour que les changements prennent effet."
             else
-                print_step "Ajout de l'utilisateur '$selected_user' au groupe sudo..."
-                # 'usermod -aG sudo' : ajoute l'utilisateur au groupe 'sudo' (-a pour append, -G pour group).
-                if sudo usermod -aG sudo "$selected_user" &>/dev/null; then
-                    print_success "L'utilisateur '$selected_user' a été ajouté au groupe sudo."
-                    print_step "Il devra se déconnecter et se reconnecter pour que les changements prennent effet."
-                else
-                    print_error "Échec de l'ajout de l'utilisateur '$selected_user' au groupe sudo."
-                fi
+                print_error "Échec de l'ajout de l'utilisateur '$selected_user' au groupe sudo."
             fi
             whiptail --msgbox "Opération terminée. Appuyez sur Entrée pour revenir au menu Sudo." 8 70
             configurer_sudo # Revenir au menu sudo
             ;;
         2)
-            # Configurer un utilisateur pour NOPASSWD.
-            print_step "Configuration de NOPASSWD pour un utilisateur..."
-            whiptail --msgbox "AVERTISSEMENT: Configurer NOPASSWD réduit la sécurité du système car l'utilisateur n'aura pas à entrer son mot de passe pour les commandes sudo." 10 70
+            local users_list=()
+            # Lit les utilisateurs depuis /etc/passwd et filtre ceux avec UID >= 1000
+            while IFS=: read -r username _ uid _ _ _ _; do
+                if (( uid >= 1000 )) && [[ "$username" != "nobody" ]]; then
+                    # Correction ici: utiliser le nom d'utilisateur pour la valeur et la description
+                    users_list+=("$username" "$username")
+                fi
+            done < /etc/passwd
 
-            local users_to_nopasswd
-            users_to_nopasswd=$(getent passwd | awk -F: '($3 >= 1000) {print $1}' | grep -vE '^(nobody|systemd-resolve|syslog|daemon|bin|sys|sync|games|man|lp|mail|news|uucp|proxy|www-data|backup|list|irc|gnats|libuuid|systemd-timesync|messagebus|_apt|uuidd|systemd-network|systemd-coredump)$' | tr '\n' ' ')
-
-            if [[ -z "$users_to_nopasswd" ]]; then
-                print_error "Aucun utilisateur régulier trouvé à configurer pour NOPASSWD."
-                whiptail --msgbox "Aucun utilisateur à configurer. Appuyez sur Entrée pour revenir au menu Sudo." 8 70
+            if [ ${#users_list[@]} -eq 0 ]; then
+                print_error "Aucun utilisateur système avec UID >= 1000 trouvé."
+                whiptail --msgbox "Aucun utilisateur éligible n'a été trouvé pour la configuration NOPASSWD." 10 60
                 configurer_sudo # Revenir au menu sudo
-                return 1
+                return
             fi
 
             local selected_user_nopasswd
-            selected_user_nopasswd=$(whiptail --title "Configurer NOPASSWD" \
-                --menu "Choisissez l'utilisateur pour lequel configurer NOPASSWD :" 20 70 10 \
-                $users_to_nopasswd \
-                3>&1 1>&2 2>&3)
+            selected_user_nopasswd=$(whiptail --menu "Sélectionnez l'utilisateur pour NOPASSWD :" 20 78 10 "${users_list[@]}" 3>&1 1>&2 2>&3)
 
             if [[ -z "$selected_user_nopasswd" ]]; then
-                print_step "Sélection de l'utilisateur annulée. Aucune modification NOPASSWD."
-                whiptail --msgbox "Opération annulée. Appuyez sur Entrée pour revenir au menu Sudo." 8 70
+                print_step "Configuration NOPASSWD annulée."
                 configurer_sudo # Revenir au menu sudo
-                return 1
+                return
             fi
 
-            # Vérifie si l'utilisateur est déjà configuré NOPASSWD.
-            # On cherche la ligne dans sudoers.d/<user> ou dans /etc/sudoers
-            if sudo grep -q "$selected_user_nopasswd ALL=(ALL) NOPASSWD: ALL" /etc/sudoers /etc/sudoers.d/* 2>/dev/null; then
-                print_warning "L'utilisateur '$selected_user_nopasswd' est déjà configuré pour NOPASSWD."
-                whiptail --msgbox "L'utilisateur '$selected_user_nopasswd' est déjà configuré pour NOPASSWD. Appuyez sur Entrée pour revenir au menu Sudo." 8 70
-                configurer_sudo
-                return 0
-            fi
+            print_step "Configuration de NOPASSWD pour l'utilisateur '$selected_user_nopasswd'..."
+            # Création ou modification d'un fichier sudoers dans /etc/sudoers.d
+            local sudoers_file="/etc/sudoers.d/90-${selected_user_nopasswd}-nopasswd"
+            local sudoers_entry="$selected_user_nopasswd ALL=(ALL) NOPASSWD: ALL"
 
-            if whiptail --yesno "Voulez-vous que l'utilisateur '$selected_user_nopasswd' puisse exécuter des commandes sudo SANS MOT DE PASSE ?" 8 70; then
-                print_step "Configuration de NOPASSWD pour '$selected_user_nopasswd'..."
-                # Créer un fichier de configuration spécifique pour cet utilisateur dans /etc/sudoers.d/
-                local sudoers_d_file="/etc/sudoers.d/$selected_user_nopasswd"
-                # Assurez-vous que le répertoire existe
-                sudo mkdir -p /etc/sudoers.d &>/dev/null
-
-                # Ajoute la ligne de configuration NOPASSWD.
-                # Utilise 'tee' avec 'sudo' pour écrire dans le fichier.
-                # 'visudo -cf' vérifie la syntaxe après modification.
-                if echo "$selected_user_nopasswd ALL=(ALL) NOPASSWD: ALL" | sudo tee "$sudoers_d_file" &>/dev/null && \
-                   sudo chmod 0440 "$sudoers_d_file" &>/dev/null && \
-                   sudo visudo -cf "$sudoers_d_file" &>/dev/null; then
-                    print_success "L'utilisateur '$selected_user_nopasswd' peut maintenant utiliser sudo sans mot de passe."
-                    print_step "Pour des raisons de sécurité, envisagez de limiter les commandes NOPASSWD si possible."
-                else
-                    print_error "Échec de la configuration de NOPASSWD pour l'utilisateur '$selected_user_nopasswd'."
-                fi
+            # Vérifie si l'entrée existe déjà pour éviter les doublons
+            if sudo grep -qxF "$sudoers_entry" /etc/sudoers.d/* 2>/dev/null; then
+                print_warning "La configuration NOPASSWD existe déjà pour l'utilisateur '$selected_user_nopasswd'."
             else
-                print_step "Configuration NOPASSWD annulée pour l'utilisateur '$selected_user_nopasswd'."
+                if echo "$sudoers_entry" | sudo tee "$sudoers_file" &>/dev/null; then
+                    print_success "NOPASSWD configuré pour '$selected_user_nopasswd'. Il ne lui sera plus demandé de mot de passe pour sudo."
+                    sudo chmod 0440 "$sudoers_file" &>/dev/null # Assure les bonnes permissions
+                else
+                    print_error "Échec de la configuration NOPASSWD pour l'utilisateur '$selected_user_nopasswd'."
+                fi
             fi
             whiptail --msgbox "Opération terminée. Appuyez sur Entrée pour revenir au menu Sudo." 8 70
             configurer_sudo # Revenir au menu sudo
             ;;
         3)
-            # Lancement de visudo.
-            print_step "Lancement de 'visudo' pour une édition manuelle du fichier sudoers..."
-            whiptail --msgbox "ATTENTION: Vous êtes sur le point de modifier le fichier sudoers.\n\nUne erreur dans ce fichier peut rendre votre système inutilisable et vous empêcher d'utiliser sudo.\n\n'visudo' effectue une vérification de syntaxe." 15 70
+            whiptail --title "ATTENTION : Modification de Sudoers" --msgbox "\
+AVERTISSEMENT: Vous êtes sur le point de modifier le fichier sudoers.
+
+Une erreur dans ce fichier peut rendre votre système inutilisable et vous empêcher d'utiliser sudo.
+
+'visudo' effectue une vérification de syntaxe." 15 70
 
             if whiptail --yesno "Voulez-vous continuer et modifier le fichier sudoers avec 'visudo' ?" 8 60; then
                 print_step "Lancement de 'visudo'..."
@@ -159,7 +137,7 @@ configurer_sudo() {
         4)
             return 0 # Retourne au menu précédent (menu_administration.sh).
             ;;
-        *)
+        *).
             print_error "Option invalide."
             whiptail --msgbox "Option invalide. Appuyez sur Entrée pour revenir au menu Sudo." 8 70
             configurer_sudo # Revenir au menu sudo
