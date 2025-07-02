@@ -27,8 +27,6 @@ cd AdminSysTools
 sudo chmod +x *
 ```
 
-Ensuite vous pouvez montrer ce que vous obtenez au final...
-
 ## Démarrage
 
 Pour lancer le projet il suffit juste faire ``./main.sh`` pour lancer le script principal. 
