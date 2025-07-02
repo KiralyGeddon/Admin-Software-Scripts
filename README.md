@@ -3,6 +3,7 @@ Script d'outils d'administrations et d'installation de softwares - Projet de for
 - Comment utiliser :
 ```
 apt install -y git
+cd $HOME
 git clone https://github.com/KiralyGeddon/AdminSysTools
 cd AdminSysTools
 chmod +x *
