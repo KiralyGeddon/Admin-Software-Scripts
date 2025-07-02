@@ -18,6 +18,7 @@ readonly RESET='\033[0m'
 print_step() { echo -e "${CYAN}${BOLD}➤ $1${RESET}"; }
 print_success() { echo -e "${GREEN}✓ $1${RESET}"; }
 print_error() { echo -e "${RED}✗ Erreur: $1${RESET}" >&2; }
+print_warning() { echo -e "${YELLOW}⚠️ Avertissement: $1${RESET}"; }
 
 # --- Fonctions d'interface utilisateur (whiptail) ---
 
