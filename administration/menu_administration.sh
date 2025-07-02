@@ -59,46 +59,46 @@ menu_admin(){
         case "$choice" in
             1)
             # Rend le script 'createuser.sh' exécutable.
-            chmod +x $SCRIPT_DIR/administration/scripts/createuser.sh
+            chmod +x $SCRIPT_DIR/scripts/createuser.sh
             # Exécute le script. '|| result=$?' capture le code de retour du script.
             # Si le script échoue (retourne un code d'erreur non nul), 'result' prendra cette valeur.
-            bash $SCRIPT_DIR/administration/scripts/createuser.sh || result=$?
+            bash $SCRIPT_DIR/scripts/createuser.sh || result=$?
             ;;
             2)
-            chmod +x $SCRIPT_DIR/administration/scripts/deluser.sh
-            bash $SCRIPT_DIR/administration/scripts/deluser.sh || result=$?
+            chmod +x $SCRIPT_DIR/scripts/deluser.sh
+            bash $SCRIPT_DIR/scripts/deluser.sh || result=$?
             ;;
             3)
-            chmod +x $SCRIPT_DIR/administration/scripts/changeIP.sh
-            bash $SCRIPT_DIR/administration/scripts/changeIP.sh || result=$?
+            chmod +x $SCRIPT_DIR/scripts/changeIP.sh
+            bash $SCRIPT_DIR/scripts/changeIP.sh || result=$?
             ;;
             4)
-            chmod +x $SCRIPT_DIR/administration/scripts/confsudo.sh
-            bash $SCRIPT_DIR/administration/scripts/confsudo.sh || result=$?
+            chmod +x $SCRIPT_DIR/scripts/confsudo.sh
+            bash $SCRIPT_DIR/scripts/confsudo.sh || result=$?
             ;;
             5)
-            chmod +x $SCRIPT_DIR/administration/scripts/changedroits.sh
-            bash $SCRIPT_DIR/administration/scripts/changedroits.sh || result=$?
+            chmod +x $SCRIPT_DIR/scripts/changedroits.sh
+            bash $SCRIPT_DIR/scripts/changedroits.sh || result=$?
             ;;
             6)
-            chmod +x $SCRIPT_DIR/administration/scripts/confssh.sh
-            bash $SCRIPT_DIR/administration/scripts/confssh.sh || result=$?
+            chmod +x $SCRIPT_DIR/scripts/confssh.sh
+            bash $SCRIPT_DIR/scripts/confssh.sh || result=$?
             ;;
             7)
-            chmod +x $SCRIPT_DIR/administration/scripts/confDNS.sh
-            bash $SCRIPT_DIR/administration/scripts/confDNS.sh || result=$?
+            chmod +x $SCRIPT_DIR/scripts/confDNS.sh
+            bash $SCRIPT_DIR/scripts/confDNS.sh || result=$?
             ;;
             8)
-            chmod +x $SCRIPT_DIR/administration/scripts/confDHCP.sh
-            bash $SCRIPT_DIR/administration/scripts/confDHCP.sh || result=$?
+            chmod +x $SCRIPT_DIR/scripts/confDHCP.sh
+            bash $SCRIPT_DIR/scripts/confDHCP.sh || result=$?
             ;;
             9)
-            chmod +x $SCRIPT_DIR/administration/scripts/routing.sh
-            bash $SCRIPT_DIR/administration/scripts/routing.sh || result=$?
+            chmod +x $SCRIPT_DIR/scripts/routing.sh
+            bash $SCRIPT_DIR/scripts/routing.sh || result=$?
             ;;
             10)
-            chmod +x $SCRIPT_DIR/administration/scripts/FTPconfig.sh
-            bash $SCRIPT_DIR/administration/scripts/FTPconfig.sh || result=$?
+            chmod +x $SCRIPT_DIR/scripts/FTPconfig.sh
+            bash $SCRIPT_DIR/scripts/FTPconfig.sh || result=$?
             ;;
             11)
                 # Lorsque l'option 11 est choisie, la commande 'return' est exécutée.
